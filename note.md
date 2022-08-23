@@ -74,3 +74,21 @@ module.exports = {
 - 函数形式的entry，可以用来做一些额外的逻辑处理，不过在自己搭脚手架的很少使用。
 
 
+# Webpack 出口output
+webpack简单出口配置如下，output是一个对象，有几个重要属性filename, path, publicPath, chunkFilename
+```javascript
+const path = require('path')
+
+module.exports = {
+  entry: './index.js',
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  mode: none // b不压缩打包的文件
+}
+```
+
+#output.filename
+
+
