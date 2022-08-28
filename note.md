@@ -140,3 +140,198 @@ module.exports = {
 - contenthash有点像chunkhash，是根据打包时CSS内容计算出的hash值。一般在使用提取CSS的插件的时候，我们使用contenthash。例如下面的配置，我们生成的CSS文件名可能会是main.3aa2e3c6.css
 
 # loader配置
+预处理器的本质是一个函数，它接受一个资源模块，然后将其处理成webpack能使用的形式。因为webpack在不进行任何配置的时候只能处理js和json文件模块
+## 预处理器的配置和使用
+### 预处理器的关键配置
+```javascript
+const path = require('path')
+
+module.exports = {
+  entry: './a.js', // a.js引入了css文件
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  modules: {
+    rules:[
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+        exclude: /node_modules/,
+        include: /src/
+      }
+    ]
+    mode: none
+  }
+}
+```
+- 预处理器是在moduels下的rules配置项里设置的，rules定义预处理器的处理规则
+- rules中test是一个正则表达式或正则表达式数组，某块文件名与正则表达式相匹配的会被use属性的预处理器处理
+- use可以是字符串，字符串数组或对象表示需要使用的预处理器，预处理器的使用顺序是从后向前的
+- exclude表示那些文件不想被某个预处理器处理，可以是字符串或正则表达式，字符串需要是绝对路径
+- include表示预处理器只处理哪些文件
+- include与exclude同时存在时，webpack优先使用exclude
+
+### 常用的loader配置
+#### babel-loader
+- 将es6代码转换为es5代码
+- babel是一系列工具的集合，webpack主要使用babel-loader这个预处理器来使用babel功能
+- @babel/preset-env是babel转码的预设
+```javascript
+const path = require('path')
+
+module.exports = {
+  entry: './a.js',
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  modules: {
+    rules:[
+      {
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        },
+        exclude: /node_modules/
+      }
+    ]
+    mode: none
+  }
+}
+```
+
+#### file-loader和url-loader
+- file-loader是文件资源预处理器，用来处理文件导入语句并替换成文件的访问地址，同时把文件输出到相应位置
+```javascript
+// css
+.background {
+  url(test.jpg)
+}
+
+// webpack.config.js
+const path = require('path')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  modules: {
+    rules:[
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      }，
+      {
+        test: /\.jpg$/,
+        use: 'file-loader'
+      }
+    ]
+    mode: none
+  }
+}
+```
+- url-loader是file-loader的增强版，增加了base64编码能力，对于文件小雨一定体积时可以用base64编码替换访问地址，减少一次网络请求
+- 当文件体积待遇阈值时，url-loader本质上是用file-loader处理
+```javascript
+// css
+.background {
+  url(test.jpg)
+}
+
+// webpack.config.js
+const path = require('path')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  modules: {
+    rules:[
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      }，
+      {
+        test: /\.(jpg|png)$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 1024 * 8
+          }
+        }
+      }
+    ]
+    mode: none
+  }
+}
+```
+- 两者处理后的资源名称默认为[contenthash].[ext],contenthash是资源内容的hash值，ext是文件拓展名
+- 处理后的资源访问地址默认使用output.publicPath，也可以在rules的options里配置publicPath，它会覆盖output.publicPath
+```javascript
+
+// webpack.config.js
+const path = require('path')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  modules: {
+    rules:[
+      {
+        test: /\.(jpg|png)$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 1024 * 8,
+            name: [name]-[contenthash].[ext],//重新定义输出资源的名称
+            publicPath: './dist' // 资源访问路径为当前目录下的dist文件夹
+          }
+        }
+      }
+    ]
+    mode: none
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
