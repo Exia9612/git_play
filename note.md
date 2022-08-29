@@ -161,8 +161,8 @@ module.exports = {
         include: /src/
       }
     ]
-    mode: none
-  }
+  },
+  mode: none
 }
 ```
 - 预处理器是在moduels下的rules配置项里设置的，rules定义预处理器的处理规则
@@ -199,8 +199,8 @@ module.exports = {
         exclude: /node_modules/
       }
     ]
-    mode: none
-  }
+  },
+  mode: none
 }
 ```
 
@@ -232,8 +232,8 @@ module.exports = {
         use: 'file-loader'
       }
     ]
-    mode: none
-  }
+  },
+  mode: none
 }
 ```
 - url-loader是file-loader的增强版，增加了base64编码能力，对于文件小雨一定体积时可以用base64编码替换访问地址，减少一次网络请求
@@ -269,8 +269,8 @@ module.exports = {
         }
       }
     ]
-    mode: none
-  }
+  },
+  mode: none
 }
 ```
 - 两者处理后的资源名称默认为[contenthash].[ext],contenthash是资源内容的hash值，ext是文件拓展名
@@ -300,10 +300,84 @@ module.exports = {
         }
       }
     ]
-    mode: none
-  }
+  },
+  mode: none
 }
 ```
+
+# plugin插件
+插件是在webpakc编译的某些阶段，通过调用webpack暴露的api来拓展webpack功能
+## 常用插件
+### 清除文件插件clean-webpack-plugin
+webpack每次打包后，磁盘空间都会存有打包后的资源，再次打包时我们需要清空本地已有的打包后的资源，减少磁盘空间的占用。clean-webpack-plugin所做的就是清除已有的打包资源
+```javascript
+// webpack.config.js
+const path = require('path')
+const { ClearWebpackPlugin } = require('clean-webpack-plugin')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  plugins: [
+    // 默认清楚i=output.path下的内容
+    new ClearWebpackPlugin()
+  ],
+  mode: none
+}
+```
+### 复制文件插件copy-webpack-plugin
+对于一些在打包过程中没有被任何模块使用的本地资源(图片，音视频等)，我们想把它们存放到资源输出目录下，就可以使用copy-webpack-plugin
+```javascript
+// webpack.config.js
+const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path: path(__dirname, 'src/img'),
+          to: path: path(__dirname, 'dist/img'),
+        }
+      ]
+    })
+  ],
+  mode: none
+}
+```
+### HTML模版插件html-webpack-plugin
+html-webpack-plugin是一个自动创建html文件的插件。因为打包后的资源名称通常是由程序自动计算出的hash值组成，我们希望有这么一款插件可以生成html文件并自动引入打包后的资源。html-webpack-plugin就实现了该功能
+```javascript
+// webpack.config.js
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  entry: './a.js' // 引入了·css文件,
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  plugins: [
+    // 会在dist目录下生成一个index.html文件
+    new HtmlWebpackPlugin({
+      title: 'html title',
+      filename: 'index.html'
+    })
+  ],
+  mode: none
+}
+```
+html-webpack-plugin支持使用ejs模版引擎定义html模版
 
 
 
