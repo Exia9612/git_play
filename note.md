@@ -379,6 +379,80 @@ module.exports = {
 ```
 html-webpack-plugin支持使用ejs模版引擎定义html模版
 
+# webpack开发环境配置
+## webpakc-dev-server
+- webpakc-dev-server会在本地开启一个网络服务器，它会自动执行本地的webpack的配置文件，同时启用webpack的文件监听模式
+- webpakc-dev-server服务器默认使用工程目录下的index.html文件。index.html不存在时，webpack显示工程目录
+### webpakc-dev-server常用配置参数
+```javascript
+// webpack.config.js
+devServer {
+  allowedHost: [
+    '.host.com', // 用 . 作为子域通配符。.host.com 会与 host.com，www.host.com 以及 host.com 等其他任何其他子域匹配。
+    'baidu.com'
+  ],
+  headers: {
+    'X-Custom-Foo': 'bar'
+  },
+  historyApiFallback: true,
+  // historyApiFallback: {
+  //   rewrites: [
+  //     { from: /^\/$/, to: '/views/landing.html' },
+  //     { from: /^\/subpage/, to: '/views/subpage.html' },
+  //     { from: /./, to: '/views/404.html' },
+  //   ],
+  // },
+  static: {
+    directory: path.join(__dirname, 'public')
+  },
+  publicPath: '/',
+  open: true,
+  compress: true,
+  hot: true,
+  proxy: {
+    // 对/api/users的请求会代理到http://localhost:3000/users
+    '/api': {
+      target: 'http://localhost:3000',
+      pathRewrites: {
+        '^/api': ''
+      }
+    }
+  }
+  port: 8089
+}
+```
+- allowedHost: 该选项允许将允许访问开发服务器的服务列入白名单，当设置为 'all' 时会跳过 host 检查，当设置为 'auto' 时，此配置项总是允许 localhost、 host 和 client.webSocketURL.hostname
+- headers: 为所有响应添加headers
+- open: webpakc-dev-server开启本地web服务后是否自动打开浏览器，默认为false
+- hot: hot module replacement是否开启模块热更替功能
+- historyApiFallback: 进行单页应用开发时，某些情况下需要使用HTML5 History模式。在HTML5 History下，所有的404响应都会返回index.html内容
+- compress: 是否为静态资源开启gzip压缩 https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/
+- proxy: 当拥有单独的 API 后端开发服务器并且希望在同一域上发送 API 请求时，代理某些 URL 可能会很有用
+  
+## source map
+source map是一个单独的文件，浏览器可以通过它还原出编译前的代码
+```javascript
+// inline 提示哪一行错误
+// cheap 提示业务代码那一行错误，但会忽略预处理器地错误
+// module 预处理器输出的source-map信息会被采用，可以看到预处理器处理前的原始代码，提示loader和第三方库错误
+// eval 打包速度最快，不生成map文件，用eval提示打包文件与映射文件的对应关系
+// nosources bundle不包含原始代码
+// hidden bundle不包含source map引用地址，在浏览器开发者工具中看不到原始代码
+// devtool: 'cheap-module-eval-source-map', development
+// cheap-module-source-map production
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  entry: './a.js'，
+  devtool: 'eval-cheap-module-source-map',
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  mode: none
+}
+```
 
 
 

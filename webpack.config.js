@@ -11,7 +11,7 @@ module.exports = {
   // cheap 提示业务代码那一行错误
   // module 提示loader和第三方哭错误
   // eval打包速度最快，不生成map文件，用eval提示打包文件与映射文件的对应关系
-  //devtool: 'cheap-module-eval-source-map', development
+  // devtool: 'cheap-module-eval-source-map', development
   // cheap-module-source-map production
   devtool: 'eval-source-map', // sourceMap, 用于在浏览器上调试代码，报错时文件指向源代码的文件
   devServer: {
