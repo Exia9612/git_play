@@ -453,8 +453,29 @@ module.exports = {
   mode: none
 }
 ```
-
-
+# webpack生产环境配置
+## 环境变量
+环境变量指的是设定环境运行的一些参数。使用webpack的过程中会遇到两种环境变量
+- node.js的环境变量
+- webpack打包模块里的环境变量
+## node.js的环境变量
+node.js的环境变量是用node执行js代码时可以获取到的环境变量，它们存放在process.env中。
+为了跨操作系统设置环境变量，一般使用cross-env的npm包。
+```javascript
+// package.json
+"scripts": {
+  "build": "cross-env NODE_ENV=development webpack"
+}
+```
+## webpack打包模块里的环境变量
+实际开发中我们需要在业务逻辑代码里根据此代码是运行在本地开发环境还是生产环境里作区分，这是需要在业务模块文件里注入环境变量。一般使用DefinePlugin插件
+```javascript
+plugins: [
+  new DefinePlugin({
+    NODE_ENV: JSON.stringify('production') // 生产环境的配置文件
+  })
+]
+```
 
 
 
