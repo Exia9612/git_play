@@ -477,6 +477,135 @@ plugins: [
 ]
 ```
 
+## 样式文件提取
+- 一般使用mini-css-extract-plugin把css文件单独提取出来
+- sass-loader处理sass文件
+- postcss-loader做浏览器的样式适配，postcss-loader需要单独的一个postcss.config.js配置文件
+```javascript
+// webpakc.config.js
+const path = require('path')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  entry: './a.js'，
+  devtool: 'eval-cheap-module-source-map',
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  module: {
+    rules: [
+      {
+        test: /^.(css | scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css.loader',
+          'postcss-loader', // 
+          'sass-loader' // 处理sass文件
+        ]
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'template.html'
+    }), // 配置后不需要手动引入提取出来的样式文件
+    new MiniCssExtractPlugin({
+      filename: '[name]-[contenthash:8].css', //同步代码里提取的css文件名称
+      chunkFilename: '[id].css' //异步代码里提取的css文件名称
+    })
+  ]
+  mode: none
+}
+
+// postcss.config.js
+var autoprefixer = require('autoprefixer')
+
+module.exports = {
+  plugins: {
+    autoprefixer({
+      browsers: [
+        "chrome >= 18"
+      ]
+    })
+  }
+}
+```
+
+## 合并配置webpack-merge
+在实际开发中，生产环境和开发环境的webpack配置文件会有相同和不同的地方，我们希望把相同配置的提取出来。维护一个公共配置文件，一个生产配置文件和一个开发配置文件。一般使用webpack-merge包。
+```javascript
+// webpakc.common.js
+const path = require('path')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  entry: './a.js'，
+  devtool: 'eval-cheap-module-source-map',
+  output: {
+    path: path(__dirname, ''),
+    filename: 'bundle.js'
+  },
+  module: {},
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'template.html'
+    })
+  ]
+  mode: none
+}
+
+// webpack.development.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /^.(css | scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'style-loader',
+          'css.loader',
+          'postcss-loader', // 
+          'sass-loader' // 处理sass文件
+        ]
+      }
+    ]
+  }
+}
+
+// webpack.production.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /^.(css | scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css.loader',
+          'postcss-loader', // 
+          'sass-loader' // 处理sass文件
+        ]
+      }
+    ]
+  },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: '[name]-[contenthash:8].css', //同步代码里提取的css文件名称
+      chunkFilename: '[id].css' //异步代码里提取的css文件名称
+    })
+  ]
+}
+
+// package.json
+"scripts": {
+  "build": 'cross-env NODE_ENV=production webpack --config webpack.production.js'
+  "dev": 'cross-env NODE_ENV=development webpack serve --config webpack.development.js'
+}
+```
+
+
 
 
 
