@@ -605,6 +605,67 @@ module.exports = {
 }
 ```
 
+# webpack性能优化
+## 打包体积分析工具 webpack-bundle-analyzer
+webpack-bundle-analyzer是一个可视化工具来监控并分析打包结果
+```javascript
+// webpakc.common.js
+const path = require('path')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  entry: {
+    app1: './a.js',
+    app2: './d.js'
+  }，
+  devtool: 'eval-cheap-module-source-map',
+  output: {
+    path: path(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  module: {
+    rules: [
+      {
+        test: /^.(css | scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'style-loader',
+          'css.loader',
+          'postcss-loader', // 
+          'sass-loader' // 处理sass文件
+        ]
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'template.html'
+    }),
+    new MiniCssExtractPlugin({
+      filename: '[name]-[contenthash:8].css', //同步代码里提取的css文件名称
+      chunkFilename: '[id].css' //异步代码里提取的css文件名称
+    }),
+    new BundleAnalyzerPlugin()
+  ]
+  mode: none
+}
+```
+
+## 预处理器与插件的时间分析(speed-measure-webpack-plugin)
+```javascript
+const SpeedMeasurePlugin = require('speed-measure-webpack-plugin')
+const smp = new SpeedMeasurePlugin()
+
+let config = {
+  // webpack 配置
+}
+
+module.exports = smp.wrap()
+```
+
+## 资源压缩
+
 
 
 
